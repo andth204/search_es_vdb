@@ -1,0 +1,14 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+langchain-huggingface==0.0.3
+sentence-transformers==3.0.1
+langchain-experimental==0.0.65
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.4.0+cpu
+elasticsearch==8.15.0
+faiss-cpu==1.8.0
+numpy==1.26.4
+requests==2.32.3
+tiktoken==0.7.0
+pydantic==2.8.2
+pymongo==4.10.1

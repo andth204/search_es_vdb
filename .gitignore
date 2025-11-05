@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.coverage.xml
+.instance
+.pyup.yml
+.bandit
+.isort_cache/
+.mypy_cache/
+.pyre/
+.pytype/
+pytestdebug.log
+
+# FastAPI / Uvicorn
+*.db
+*.log
+*.pkl
+faiss.index
+chunks_metadata.pkl
+
+# Environment
+.env
+.env.local
+.env.dev
+.env.prod
+
+# Docker
+.dockerenv
+.DS_Store
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo

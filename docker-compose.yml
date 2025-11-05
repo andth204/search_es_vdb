@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+  # ====================================
+  # ELASTICSEARCH - Dùng chung
+  # ====================================
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - shared_network
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ====================================
+  # MONGODB - Dùng chung
+  # ====================================
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - shared_network
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ====================================
+  # SERVICE INDEXING - Cho đồng nghiệp
+  # ====================================
+  service_indexing:
+    build: ./service_indexing
+    container_name: service_indexing
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - MONGO_URI=mongodb://mongodb:27017/
+      - FAISS_DIR=/app/faiss_data
+    volumes:
+      - faiss_data:/app/faiss_data # ← Volume chung cho FAISS
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    networks:
+      - shared_network
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  # ====================================
+  # SERVICE SEARCH - Cho bạn
+  # ====================================
+  service_search:
+    build: ./service_search
+    container_name: service_search
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - MONGO_URI=mongodb://mongodb:27017/
+      - FAISS_DIR=/app/faiss_data
+    volumes:
+      - faiss_data:/app/faiss_data # ← Cùng volume với indexing
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    networks:
+      - shared_network
+    ports:
+      - "8001:8000"
+    restart: unless-stopped
+
+# ====================================
+# VOLUMES - Chia sẻ giữa services
+# ====================================
+volumes:
+  es_data:
+    driver: local
+  mongo_data:
+    driver: local
+  faiss_data:
+    # ← Volume chung cho FAISS files
+    driver: local
+
+# ====================================
+# NETWORK - Kết nối các services
+# ====================================
+networks:
+  shared_network:
+    driver: bridge
