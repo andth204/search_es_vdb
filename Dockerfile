@@ -1,4 +1,3 @@
-# Dockerfile cho service_search
 FROM python:3.10-slim
 
 WORKDIR /app
